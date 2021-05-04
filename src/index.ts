@@ -1,9 +1,9 @@
-import dotenv from 'dotenv';
+import { config } from 'dotenv';
 import TelegramBot from 'node-telegram-bot-api';
 import axios from 'axios';
 import express from 'express';
 
-dotenv.config();
+config();
 
 const token = process.env.TELEGRAM_TOKEN!;
 const herokuUrl = process.env.HEROKU_URL;
