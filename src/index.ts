@@ -23,7 +23,7 @@ bot.on('message', async msg => {
   if (msg.text === '/start') {
     return bot.sendMessage(
       chatId,
-      'မင်္ဂလာပါ။\nချုံ့ချင်တဲ့ url တွေကိုစတင်ပို့လို့ရပါပြီ။'
+      'Welcome. You can now start sending urls you wish to shorten'
     );
   }
 
@@ -32,7 +32,7 @@ bot.on('message', async msg => {
     const shortUrl = await shortenUrl(msg.text!);
     return bot.sendMessage(chatId, shortUrl);
   } catch (error) {
-    return bot.sendMessage(chatId, 'url တွေကိုပဲချုံ့ပေးလို့ရမှာပါ။');
+    return bot.sendMessage(chatId, 'Please send a valid url');
   }
 });
 
