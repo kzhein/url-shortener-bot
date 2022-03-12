@@ -1,5 +1,5 @@
 import { config } from 'dotenv';
-import TelegramBot from 'node-telegram-bot-api';
+import { Telegraf } from 'telegraf';
 import axios from 'axios';
 import express from 'express';
 
@@ -7,34 +7,28 @@ config();
 
 const token = process.env.TELEGRAM_TOKEN!;
 const herokuUrl = process.env.HEROKU_URL;
-let bot: TelegramBot;
 
-if (process.env.NODE_ENV === 'production') {
-  bot = new TelegramBot(token);
-  bot.setWebHook(herokuUrl + token);
-} else {
-  bot = new TelegramBot(token, { polling: true }); // enabling polling will delete webhook if there is one
-}
+const bot = new Telegraf(token);
 
-bot.on('message', async msg => {
-  const chatId = msg.chat.id;
+bot.start(ctx =>
+  ctx.reply('Welcome. You can now start sending urls you wish to shorten')
+);
 
-  // send a welcome message
-  if (msg.text === '/start') {
-    return bot.sendMessage(
-      chatId,
-      'Welcome. You can now start sending urls you wish to shorten'
-    );
-  }
-
+bot.on('text', async ctx => {
   // shorten url
   try {
-    const shortUrl = await shortenUrl(msg.text!);
-    return bot.sendMessage(chatId, shortUrl);
+    const shortUrl = await shortenUrl(ctx.update.message.text);
+    return ctx.reply(shortUrl);
   } catch (error) {
-    return bot.sendMessage(chatId, 'Please send a valid url');
+    return ctx.reply('Please send a valid url');
   }
 });
+
+if (process.env.NODE_ENV === 'production') {
+  bot.telegram.setWebhook(herokuUrl + token);
+} else {
+  bot.launch();
+}
 
 const app = express();
 
@@ -47,7 +41,7 @@ app.listen(process.env.PORT, () => {
 });
 
 app.post(`/${token}`, (req, res) => {
-  bot.processUpdate(req.body);
+  bot.handleUpdate(req.body);
   res.sendStatus(200);
 });
 
