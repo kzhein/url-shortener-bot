@@ -6,7 +6,14 @@ import express from 'express';
 config();
 
 const token = process.env.TELEGRAM_TOKEN!;
-const herokuUrl = process.env.HEROKU_URL;
+const appUrl = process.env.APP_URL;
+
+const shortenUrl = async (url: string): Promise<string> => {
+  const res = await axios.post('https://cleanuri.com/api/v1/shorten', {
+    url,
+  });
+  return res.data.result_url;
+};
 
 const bot = new Telegraf(token);
 
@@ -25,29 +32,22 @@ bot.on('text', async ctx => {
 });
 
 if (process.env.NODE_ENV === 'production') {
-  bot.telegram.setWebhook(herokuUrl + token);
+  bot.telegram.setWebhook(appUrl + token);
+
+  const app = express();
+
+  // Body parser, reading data from body into req.body
+  app.use(express.json({ limit: '10kb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+  app.post(`/${token}`, (req, res) => {
+    bot.handleUpdate(req.body);
+    res.sendStatus(200);
+  });
+
+  app.listen(process.env.PORT, () => {
+    console.log(`Bot running on port ${process.env.PORT}...`);
+  });
 } else {
   bot.launch();
 }
-
-const app = express();
-
-// Body parser, reading data from body into req.body
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
-
-app.listen(process.env.PORT, () => {
-  console.log(`Bot running on port ${process.env.PORT}...`);
-});
-
-app.post(`/${token}`, (req, res) => {
-  bot.handleUpdate(req.body);
-  res.sendStatus(200);
-});
-
-const shortenUrl = async (url: string): Promise<string> => {
-  const res = await axios.post('https://cleanuri.com/api/v1/shorten', {
-    url,
-  });
-  return res.data.result_url;
-};
