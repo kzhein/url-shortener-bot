@@ -71,6 +71,6 @@ const app = new Application();
 
 app.use(router.routes());
 
-if (DENO_ENV === 'production') {
+if (DENO_ENV !== 'development') {
   app.listen({ port: 8000 });
 }
