@@ -1,5 +1,5 @@
 import { config } from 'https://deno.land/std@0.159.0/dotenv/mod.ts';
-import { Telegraf } from 'https://esm.sh/telegraf@4.12.2';
+import { Telegraf } from 'https://esm.sh/telegraf@4.12.2?bundle';
 import axios from 'https://esm.sh/axios@1.4.0';
 import { Application, Router } from 'https://deno.land/x/oak@v11.1.0/mod.ts';
 
