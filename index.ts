@@ -1,7 +1,7 @@
 import { config } from 'https://deno.land/std@0.159.0/dotenv/mod.ts';
-import { Telegraf } from 'npm:telegraf@4.12.2';
 import axios from 'npm:axios@1.4.0';
-import { Application, Router } from 'https://deno.land/x/oak@v11.1.0/mod.ts';
+import express from 'npm:express@4.18.2';
+import { Telegraf } from 'npm:telegraf@4.12.2';
 
 await config({
   export: true,
@@ -48,29 +48,23 @@ bot.on('text', async ctx => {
 
 if (DENO_ENV === 'development') {
   bot.launch(); // start polling which will delete webhook if there is one
-}
+} else {
+  const app = express();
 
-const router = new Router();
+  app.use(express.json({ limit: '10kb' }));
 
-router.post(`/${TELEGRAM_TOKEN}`, async ctx => {
-  const body = await ctx.request.body().value;
-  await bot.handleUpdate(body);
-  ctx.response.status = 200;
-});
+  app.post(`/${TELEGRAM_TOKEN}`, async (req, res) => {
+    await bot.handleUpdate(req.body);
+    res.sendStatus(200);
+  });
 
-// Call this endpoint to set webhook in production
-router.get('/hello', async ctx => {
-  await fetch(
-    `https://api.telegram.org/bot${TELEGRAM_TOKEN}/setWebhook?url=${APP_URL}/${TELEGRAM_TOKEN}`
-  );
+  // Call this endpoint to set webhook in production
+  app.get('/hello', async (req, res) => {
+    await fetch(
+      `https://api.telegram.org/bot${TELEGRAM_TOKEN}/setWebhook?url=${APP_URL}/${TELEGRAM_TOKEN}`
+    );
+    res.send('Hello! 👋');
+  });
 
-  ctx.response.body = 'Hello! 👋';
-});
-
-const app = new Application();
-
-app.use(router.routes());
-
-if (DENO_ENV !== 'development') {
   app.listen({ port: 8000 });
 }
