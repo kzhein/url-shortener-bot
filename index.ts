@@ -1,11 +1,9 @@
-import { config } from 'https://deno.land/std@0.159.0/dotenv/mod.ts';
+import { load } from 'https://deno.land/std@0.207.0/dotenv/mod.ts';
 import axios from 'npm:axios@1.4.0';
 import express from 'npm:express@4.18.2';
 import { Telegraf } from 'npm:telegraf@4.12.2';
 
-await config({
-  export: true,
-});
+await load({ export: true });
 
 const DENO_ENV = Deno.env.get('DENO_ENV');
 const TELEGRAM_TOKEN = Deno.env.get('TELEGRAM_TOKEN');
@@ -30,7 +28,7 @@ const shortenUrl = async (url: string): Promise<string> => {
 const bot = new Telegraf(TELEGRAM_TOKEN as string);
 
 bot.start(ctx =>
-  ctx.reply('Welcome. You can now start sending urls you wish to shorten')
+  ctx.reply('Welcome. You can now start sending urls you wish to shorten'),
 );
 
 bot.on('text', async ctx => {
@@ -61,7 +59,7 @@ if (DENO_ENV === 'development') {
   // Call this endpoint to set webhook in production
   app.get('/hello', async (req, res) => {
     await fetch(
-      `https://api.telegram.org/bot${TELEGRAM_TOKEN}/setWebhook?url=${APP_URL}/${TELEGRAM_TOKEN}`
+      `https://api.telegram.org/bot${TELEGRAM_TOKEN}/setWebhook?url=${APP_URL}/${TELEGRAM_TOKEN}`,
     );
     res.send('Hello! 👋');
   });
